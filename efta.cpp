@@ -9,10 +9,15 @@
 #define handsize 14
 
 using namespace std;
+//NOTATION
+//subset: any random arrangement of cards
+//group: a straight or 3-of-a-kind or 4-of-a-kind
 
 
+//This is the recursive function that supposedly does it all
 bool do_stuff(int d_s,int l,int i,vector<int>& ss,vector<int>& skip,vector<int>& newss,vector<int>& stackmonster);
 
+//most of these functions are helpers in case i want to simulate the full game 
 void printcard(int card,bool newline){
 	char* suit="CHSDCHSD";
 	char* num="A234567890JQK";
@@ -91,9 +96,10 @@ void set_scart(std::vector<int>& hand,std::vector<int>& scarts,int cardpos){
     hand.erase(c);
 }
 
+//this is the function that is called many many times while checking if some subset of cards form a group
 bool is_a_group(vector<int> nums){
-    printf("Sorting: ");
-    sort(nums.begin(),nums.end());
+    printf("Sorting: ");//im sorry what
+    sort(nums.begin(),nums.end());//is this really nescessary
     printhand(nums);
 
     if((nums.size()<3)||(nums.size()>13)){
@@ -145,19 +151,17 @@ bool is_a_group(vector<int> nums){
     return ofkind;
 }
 
-bool is_double(vector<int>& nums){//checks if 2 card go together
-    //printf("Sorting: ");
-    sort(nums.begin(),nums.end());
-    //printhand(nums);
+bool is_double(int n1, int n2){//checks if 2 card go together
 
-    if((nums.size()!=2)){
-        printf("Checking sth trivial (check double of size !=2 bruh moment)\n");
-        return false;
+    if(n1>n2){
+        int temp=n1;
+        n1=n2;
+        n2=temp;
     }
 
     //straight - this optimize
     bool straight=true;
-    if(nums[1]%52!=(nums[0]+1)%52){
+    if(n2%52!=(n1+1)%52){
         straight=false;
     }
     if(straight){
@@ -166,7 +170,7 @@ bool is_double(vector<int>& nums){//checks if 2 card go together
 
     //of-a-kind - this can be optimized
     bool ofkind=true;
-    if ((nums[1]%13!=nums[0]%13)||(nums[1]%52==nums[0]%52)){
+    if ((n2%13!=n1%13)||(n1%52==n2%52)){
         ofkind=false;
     }
     return ofkind;
@@ -218,6 +222,7 @@ void next_enum(vector<int>& start,int limit){
     }
 }
 
+//This is old, just saving it for reference
 bool is_subset_valid(vector<int> ss){//ss stands for subset
     //YOU ARE VALID
     //for any group of 2+ cards do we have at least 1 that can join them
@@ -245,39 +250,74 @@ bool is_subset_valid(vector<int> ss){//ss stands for subset
     return false;
 }
 
+bool check_subset(vector<int>& ss){
+    //the goal is to cut the subset into smaller subsets and check those.
+    //the problem is how to do it without being O(n^n)
+
+    //for any set of 2+ cards do we have at least 1 that can join them
+    //for any join check the subset that remains recursively.
+
+    //find 2 cards that go together (O(n^2))
+    int i,j,k;
+    vector<int> smaller_ss;
+    bool found_double=false;
+    for(i=0;(i<ss.size()-1)&& (!found_double);i++){
+        for(j=i+1;j<ss.size();j++){//dont forget edge case ss.size()<=1
+            if (is_double(ss[i],ss[j])){
+                printf("found a double %d %d",i,j);
+                found_double=true;
+
+                //ok now you have 2 cards, you need to find 3,4,5,6...
+                smaller_ss.push_back(ss[i]);
+                smaller_ss.push_back(ss[j]);
+                for(k=0;k<ss.size();k++){
+                    if(k!=i&&k!=j){
+                        smaller_ss.push_back(ss[k]);
+                        if(is_a_group(smaller_ss)){//found 3 cards
+                            //TODO:see if u can make bigger group (find 4,5,6...)
+                            //TODO:check_subset(the rest of the cards) for each of these groups
+                        }
+                    }
+                }
+                //if no group, just go find the next pair
+                smaller_ss.clear();
+            }
+        }
+    }
+    if(!found_double){//this means that this subset cannot be made into groups.
+        return false;
+    }
+    printf("double cards are at %d %d in ss: ",i,j);
+
+}
+
 int main(){
 	int seed=1233;
     vector<int> deck,hand1,hand2,scarts;
     srand(seed);//time(NULL));
 
 	printf("Hello. Remember 0 is 10, ## is joker. thx\n");
-	filldeck(deck);
-    shuffledeck(deck,scarts);
-    deal(deck,hand1);
-    deal(deck,hand2);
-
-    printf("Cards have been dealt. \n");
     vector<int> test;
 
-    test.push_back(16);
-    test.push_back(13);
-    test.push_back(14);
-    test.push_back(15);
-    test.push_back(23);
-    test.push_back(24);
-    test.push_back(25);
-    test.push_back(22);
+    //This is where the card set is defined. 
+    //TODO: read this from a file
+    test.push_back(16);//H4
+    test.push_back(13);//HA
+    test.push_back(14);//H2
+    test.push_back(15);//H3
+    test.push_back(23);//HJ
+    test.push_back(24);//HQ
+    test.push_back(25);//HK
+    test.push_back(22);//H0
+    //the cards above should yield a positive output ( H(A-2-3-4), H(0-J-Q-K) ). 2 straights of size 4.
 
-
-
+    printf("Testing card set: ");
     printhand(test);
-    printf(is_subset_valid(test)?"YES":"NO");
+    printf(check_subset(test)?"CAN BE DONE":"CANNOT BE DONE");
     printf("\n");
-    printhand(test);
-    printf("\n");
-
 }
 
+//this is old, saving it for reference.
 bool do_stuff(int d_s,int l,int i,vector<int>& ss,vector<int>& skip,vector<int>& newss,vector<int>& stackmonster){
     int m;
     //if(i>ss.size()){
