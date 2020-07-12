@@ -300,8 +300,8 @@ bool check_subset(vector<int> ss,bool printstatus){
                                 }
                             }
                             if(check_subset(reduced_ss,false)){
-                                printhand(current_group);
                                 printf("\n");
+                                printhand(current_group);
                                 return true;
                             }//recursive step
                             reduced_ss.clear();
@@ -317,13 +317,13 @@ bool check_subset(vector<int> ss,bool printstatus){
                                             }
                                         }
                                         if(check_subset(reduced_ss,false)){
-                                            printhand(current_group);
                                             printf("\n");
+                                            printhand(current_group);
                                             return true;
                                         }//recursive step
                                         reduced_ss.clear();
 
-                                        for(l=0;l<ss.size();l++){
+                                        for(m=0;m<ss.size();m++){
                                             if(m!=i&&m!=j&&m!=k&&m!=l){
                                                 current_group.push_back(ss[m]);
                                                 if(is_a_group(current_group)){//found 5 cards
@@ -333,8 +333,8 @@ bool check_subset(vector<int> ss,bool printstatus){
                                                         }
                                                     }
                                                     if(check_subset(reduced_ss,false)){
-                                                        printhand(current_group);
                                                         printf("\n");
+                                                        printhand(current_group);
                                                         return true;
                                                     }//recursive step
                                                     reduced_ss.clear();
@@ -363,7 +363,7 @@ bool check_subset(vector<int> ss,bool printstatus){
 
 int main(){
     setvbuf (stdout, NULL, _IONBF, BUFSIZ);//make printf print immediately
-	int seed=131331;
+	int seed=131;
     vector<int> deck,hand1,hand2,scarts;
     srand(seed);
 
@@ -373,10 +373,11 @@ int main(){
     int i;
     //TODO: implement jokers
     //TODO: read this from a file
-    for(i=1;i<54000;i++){
+    for(i=1;i<54;i++){
         filldeck(test);
         shuffledeck(test);
-        test.resize(10);
+        test.resize(i);
+
         sort(test.begin(),test.end());
 
         printf("Testing card set (%d cards): ",i);
