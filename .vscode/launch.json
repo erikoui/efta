@@ -9,7 +9,7 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "${fileDirname}\\${fileBasenameNoExtension}.exe",
-            "args": [],
+            "args": ["/O2"],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "environment": [],
