@@ -98,7 +98,7 @@ void set_scart(std::vector<int>& hand,std::vector<int>& scarts,int cardpos){
 
 //this is the function that is called many many times while checking if some subset of cards form a group
 bool is_a_group(vector<int> nums){
-    //printf("Sorting: ");//im sorry what
+    //printf("checking if group: ");
     sort(nums.begin(),nums.end());//is this really nescessary
     //printhand(nums);
 
@@ -112,11 +112,13 @@ bool is_a_group(vector<int> nums){
     //printf(" - Checking if straight...\n");
     for(int i=1;i<nums.size();i++){
         //printf("\tChecking %d against %d \n",nums[i]%52,(nums[i-1]+1)%52);
-        if((nums[i]%52!=(nums[i-1]+1)%52)||(nums[i]%13==0)      &&((nums[i]!=-1)&&(nums[i-1]!=-1))){
-            straight=false;
-            //printf("Not ok\n");
-            fflush(stdout);
-            break;
+        if(!((nums[i]==-1)||(nums[i-1]==-1))){//there are no jokers
+            if(((nums[i]%52!=(nums[i-1]+1)%52)||(nums[i]%13==0))   ){
+                straight=false;
+                //printf("Not ok\n");
+                fflush(stdout);
+                break;
+            }
         }
     }
     if(straight){
@@ -133,14 +135,16 @@ bool is_a_group(vector<int> nums){
     }
     else{
         for(int i=1;i<nums.size();i++){
-            if ((nums[i]%13!=nums[i-1]%13)||(nums[i]%52==nums[i-1]%52)      &&((nums[i]!=-1)&&(nums[i-1]!=-1))){
-                ofkind=false;
-                break;
+            if((nums[i]!=-1)&&(nums[i-1]!=-1)){   
+                if (((nums[i]%13!=nums[i-1]%13)||(nums[i]%52==nums[i-1]%52) )){ 
+                    ofkind=false;
+                    break;  
+                }
             }
         }
     }
     if(nums.size()==4){
-        if((nums[1]%52==nums[3]%52)||(nums[0]%52==nums[3]%52)){
+        if(((nums[1]%52==nums[3]%52)||(nums[0]%52==nums[3]%52) )     &&((nums[0]!=-1)||(nums[1]!=-1)||(nums[2]!=-1)||(nums[3]!=-1))){
             ofkind=false;
         }
     }else{
@@ -152,16 +156,18 @@ bool is_a_group(vector<int> nums){
 }
 
 bool is_double(int n1, int n2){//checks if 2 card go together
-
+    if((n1==-1)||(n2==-1)){//if joker its always double
+        return true;
+    }
     if(n1>n2){
         int temp=n1;
         n1=n2;
         n2=temp;
     }
-
+    
     //straight - this optimize
     bool straight=true;
-    if((n2%52!=(n1+1)%52)     &&((n1!=-1)&&(n2!=-1))){
+    if((n2%52!=(n1+1)%52)){
         straight=false;
     }
     if(straight){
@@ -170,7 +176,7 @@ bool is_double(int n1, int n2){//checks if 2 card go together
 
     //of-a-kind - this can be optimized
     bool ofkind=true;
-    if (((n2%13!=n1%13)||(n1%52==n2%52))        &&((n1!=-1)&&(n2!=-1))){
+    if (((n2%13!=n1%13)||(n1%52==n2%52))){
         ofkind=false;
     }
     return ofkind;
@@ -263,7 +269,7 @@ bool check_subset(vector<int> ss,bool printstatus){
         return true;
     }
     if(ss.size()<=2){//left with 1 or 2 cards, cannot make another group
-        printf("cannot make another group with this config\n");
+        //printf("cannot make another group with this config\n");
         return false;
     }
 
@@ -357,9 +363,9 @@ bool check_subset(vector<int> ss,bool printstatus){
 
 int main(){
     setvbuf (stdout, NULL, _IONBF, BUFSIZ);//make printf print immediately
-	int seed=1233;
+	int seed=131331;
     vector<int> deck,hand1,hand2,scarts;
-    srand(time(NULL));
+    srand(seed);
 
 	printf("Hello. Remember 0 is 10, ## is joker. thx\n");
     vector<int> test;
@@ -367,19 +373,19 @@ int main(){
     int i;
     //TODO: implement jokers
     //TODO: read this from a file
-    for(i=1;i<54;i++){
+    for(i=1;i<54000;i++){
         filldeck(test);
-        //shuffledeck(test);
-        test.resize(i);
+        shuffledeck(test);
+        test.resize(10);
         sort(test.begin(),test.end());
 
         printf("Testing card set (%d cards): ",i);
         printhand(test);
         //printf(check_subset(test)?"CAN BE DONE":"CANNOT BE DONE");
         if(check_subset(test,true)){
-            break;
+           break;
         }
-        printf("\n");
+        //printf("\n");
         test.clear();
     }
 }
