@@ -98,9 +98,9 @@ void set_scart(std::vector<int>& hand,std::vector<int>& scarts,int cardpos){
 
 //this is the function that is called many many times while checking if some subset of cards form a group
 bool is_a_group(vector<int> nums){
-    printf("Sorting: ");//im sorry what
+    //printf("Sorting: ");//im sorry what
     sort(nums.begin(),nums.end());//is this really nescessary
-    printhand(nums);
+    //printhand(nums);
 
     if((nums.size()<3)||(nums.size()>13)){
         printf("Checking sth trivial (size = %d)\n",nums.size());
@@ -250,7 +250,7 @@ bool is_subset_valid(vector<int> ss){//ss stands for subset
     return false;
 }
 
-bool check_subset(vector<int>& ss){
+bool check_subset(vector<int> ss){
     //the goal is to cut the subset into smaller subsets and check those.
     //the problem is how to do it without being O(n^n)
 
@@ -258,36 +258,94 @@ bool check_subset(vector<int>& ss){
     //for any join check the subset that remains recursively.
 
     //find 2 cards that go together (O(n^2))
-    int i,j,k;
-    vector<int> smaller_ss;
+    int i,j,k,l,m,n;
+    if(ss.size()==0){//all cards have been made into groups
+        return true;
+    }
+    if(ss.size()<=2){//left with 1 or 2 cards, cannot make another group
+        return false;
+    }
+
+    vector<int> current_group;
+    vector<int> reduced_ss;
+    current_group.reserve(5);
+    reduced_ss.reserve(ss.size());
+
     bool found_double=false;
     for(i=0;(i<ss.size()-1)&& (!found_double);i++){
         for(j=i+1;j<ss.size();j++){//dont forget edge case ss.size()<=1
             if (is_double(ss[i],ss[j])){
-                printf("found a double %d %d",i,j);
                 found_double=true;
 
-                //ok now you have 2 cards, you need to find 3,4,5,6...
-                smaller_ss.push_back(ss[i]);
-                smaller_ss.push_back(ss[j]);
+                //ok now you have 2 cards, you need to find 3,4,5 (more than 5 is just 3+3)...
+                current_group.push_back(ss[i]);
+                current_group.push_back(ss[j]);
                 for(k=0;k<ss.size();k++){
                     if(k!=i&&k!=j){
-                        smaller_ss.push_back(ss[k]);
-                        if(is_a_group(smaller_ss)){//found 3 cards
-                            //TODO:see if u can make bigger group (find 4,5,6...)
-                            //TODO:check_subset(the rest of the cards) for each of these groups
+                        current_group.push_back(ss[k]);
+                        if(is_a_group(current_group)){//found 3 cards
+
+                            for(n=0;n<ss.size();n++){//make the reduced subset
+                                if(n!=i&&n!=j&&n!=k){
+                                    reduced_ss.push_back(ss[n]);
+                                }
+                            }
+                            if(check_subset(reduced_ss)){
+                                printhand(current_group);
+                                printf("\n");
+                                return true;
+                            }//recursive step
+                            reduced_ss.clear();
+
+                            for(l=0;l<ss.size();l++){
+                                if(l!=i&&l!=j&&l!=k){
+                                    current_group.push_back(ss[l]);
+                                    if(is_a_group(current_group)){//found 4 cards
+
+                                        for(n=0;n<ss.size();n++){//make the reduced subset
+                                            if(n!=i&&n!=j&&n!=k&&n!=l){
+                                                reduced_ss.push_back(ss[n]);
+                                            }
+                                        }
+                                        if(check_subset(reduced_ss)){
+                                            printhand(current_group);
+                                            printf("\n");
+                                            return true;
+                                        }//recursive step
+                                        reduced_ss.clear();
+
+                                        for(l=0;l<ss.size();l++){
+                                            if(m!=i&&m!=j&&m!=k&&m!=l){
+                                                current_group.push_back(ss[m]);
+                                                if(is_a_group(current_group)){//found 5 cards
+                                                    for(n=0;n<ss.size();n++){//make the reduced subset
+                                                        if(n!=i&&n!=j&&n!=k&&n!=l&&n!=m){
+                                                            reduced_ss.push_back(ss[n]);
+                                                        }
+                                                    }
+                                                    if(check_subset(reduced_ss)){
+                                                        printhand(current_group);
+                                                        printf("\n");
+                                                        return true;
+                                                    }//recursive step
+                                                    reduced_ss.clear();
+                                                }
+                                                current_group.pop_back();
+                                            }
+                                        }
+                                    }
+                                    current_group.pop_back();
+                                }
+                            }
                         }
+                        current_group.pop_back();
                     }
                 }
-                //if no group, just go find the next pair
-                smaller_ss.clear();
+                current_group.clear();
             }
         }
     }
-    if(!found_double){//this means that this subset cannot be made into groups.
-        return false;
-    }
-    printf("double cards are at %d %d in ss: ",i,j);
+    return false;//could not go to a configuration where 0 cards are left.
 
 }
 
@@ -300,15 +358,20 @@ int main(){
     vector<int> test;
 
     //This is where the card set is defined. 
+    //TODO: implement jokers
     //TODO: read this from a file
     test.push_back(16);//H4
+    test.push_back(25);//HK
     test.push_back(13);//HA
+    test.push_back(23);//HJ
     test.push_back(14);//H2
     test.push_back(15);//H3
-    test.push_back(23);//HJ
     test.push_back(24);//HQ
-    test.push_back(25);//HK
     test.push_back(22);//H0
+    test.push_back(26);//SA
+    test.push_back(39);//DA
+    test.push_back(52);//CA
+    test.push_back(21);//H9
     //the cards above should yield a positive output ( H(A-2-3-4), H(0-J-Q-K) ). 2 straights of size 4.
 
     printf("Testing card set: ");
